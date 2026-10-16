@@ -1,0 +1,568 @@
+diff --git a/LISEZ-MOI-SEO.md b/LISEZ-MOI-SEO.md
+new file mode 100644
+index 0000000..d043c7d
+--- /dev/null
++++ b/LISEZ-MOI-SEO.md
+@@ -0,0 +1,17 @@
++# Optimisation SEO — mode d'emploi
++
++## Avant la mise en ligne (obligatoire)
++1. Dans `src/data/clinicData.ts` (bloc `CLINIC_CONTACT`) : remplacer l'adresse, les téléphones et l'e-mail par les vrais.
++   Ces valeurs alimentent le site ET les données structurées Google.
++2. Définir l'adresse du site (variable `SITE_URL`, ex. `https://www.votre-domaine.ma`) dans les réglages de l'hébergeur.
++   Sans elle, le plan du site (sitemap.xml) et la balise canonical ne sont pas créés.
++3. Commande de construction : `npm run build` — dossier à publier : `dist`.
++
++## Ce que fait `npm run build`
++- Construit le site (Vite) puis lance `scripts/seo.ts` : texte lisible sans JavaScript, JSON-LD (Dentist, FAQPage),
++  6 pages de soins `/soins/<nom>/`, `sitemap.xml`, `robots.txt`.
++
++## Reste à faire par le cabinet (non automatisable)
++- Remplacer les avis fictifs (`INITIAL_REVIEWS`) et les chiffres (`STATS_ITEMS`) par des données réelles et justifiables.
++- Créer/compléter la fiche Google Business Profile avec exactement les mêmes nom, adresse, téléphone.
++- Ajouter la page « Mentions légales ».
+diff --git a/index.html b/index.html
+index c681f08..5227d78 100644
+--- a/index.html
++++ b/index.html
+@@ -3,20 +3,26 @@
+   <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Cabinet Dentaire Dr. Rania Azzouzi - Tanger</title>
+-    <meta name="description" content="Cabinet de chirurgie dentaire et d'esthétique du sourire d'excellence à Tanger, dirigé par le Dr. Rania Azzouzi." />
+-    <meta property="og:title" content="Cabinet Dentaire Dr. Rania Azzouzi - Tanger" />
+-    <meta property="og:description" content="Cabinet de chirurgie dentaire et d'esthétique du sourire d'excellence à Tanger, dirigé par le Dr. Rania Azzouzi." />
++    <title>Dentiste à Tanger | Cabinet Dentaire Dr. Rania Azzouzi</title>
++    <meta name="description" content="Cabinet dentaire à Tanger : implants, orthodontie, facettes et esthétique du sourire avec le Dr. Rania Azzouzi. Urgences dentaires, prise de rendez-vous par WhatsApp." />
++    <meta name="robots" content="index, follow, max-image-preview:large" />
++    <!--SEO_HEAD-->
++    <meta property="og:title" content="Dentiste à Tanger | Cabinet Dentaire Dr. Rania Azzouzi" />
++    <meta property="og:description" content="Implants, orthodontie, facettes et esthétique du sourire à Tanger avec le Dr. Rania Azzouzi." />
+     <meta property="og:type" content="website" />
++    <meta property="og:locale" content="fr_MA" />
+     <meta name="twitter:card" content="summary_large_image" />
++    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
++    <meta name="theme-color" content="#0a0a0a" />
+ 
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
++    <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
++    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
++    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300,0..1,0&icon_names=ac_unit,add,arrow_forward,calendar_month,call,chat,check,check_circle,checklist,chevron_right,close,dentistry,description,emergency,error_outline,event,expand_more,face,health_and_safety,help_outline,location_on,lock,mail,medical_services,medication,photo_camera,print,rate_review,restaurant,schedule,search,verified,verified_user,warning,water_drop&display=block" rel="stylesheet" />
+   </head>
+   <body class="bg-[#fbf9f9] text-[#1b1c1c] font-sans antialiased selection:bg-[#e3e2e2] selection:text-[#1b1c1c]">
+-    <div id="root"></div>
++    <div id="root"><!--SEO_ROOT--></div>
+     <script type="module" src="/src/main.tsx"></script>
+   </body>
+ </html>
+diff --git a/package.json b/package.json
+index 174a78b..41bb19a 100644
+--- a/package.json
++++ b/package.json
+@@ -1,11 +1,11 @@
+ {
+-  "name": "react-example",
++  "name": "cabinet-dentaire-azzouzi",
+   "private": true,
+   "version": "0.0.0",
+   "type": "module",
+   "scripts": {
+     "dev": "vite --port=3000 --host=0.0.0.0",
+-    "build": "vite build",
++    "build": "vite build && tsx scripts/seo.ts",
+     "preview": "vite preview",
+     "clean": "rm -rf dist server.js",
+     "lint": "tsc --noEmit"
+@@ -27,7 +27,7 @@
+     "@types/react": "^19.3.0",
+     "@types/react-dom": "^19.3.0",
+     "autoprefixer": "^10.4.21",
+-    "esbuild": "^0.25.0",
++    "esbuild": "^0.28.0",
+     "tailwindcss": "^4.3.3",
+     "tsx": "^4.21.0",
+     "typescript": "^7.0.2",
+diff --git a/public/favicon.svg b/public/favicon.svg
+new file mode 100644
+index 0000000..9b17e92
+--- /dev/null
++++ b/public/favicon.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0a0a0a"/><text x="32" y="43" font-family="Georgia,serif" font-size="30" text-anchor="middle" fill="#d4af37">RA</text></svg>
+diff --git a/scripts/seo.ts b/scripts/seo.ts
+new file mode 100644
+index 0000000..6761c7c
+--- /dev/null
++++ b/scripts/seo.ts
+@@ -0,0 +1,178 @@
++/**
++ * Étape SEO exécutée automatiquement après `vite build` (voir package.json).
++ * Elle écrit dans le dossier dist/ :
++ *  - index.html enrichi : balises, données structurées, texte lisible sans JavaScript
++ *  - une page statique par soin : dist/soins/<id>/index.html
++ *  - sitemap.xml et robots.txt
++ * Source unique des informations : src/data/clinicData.ts (aucune donnée dupliquée).
++ *
++ * Adresse du site : variable SITE_URL (ex. https://www.dr-azzouzi.ma).
++ * Sans SITE_URL, les liens absolus (canonical, sitemap) sont volontairement omis.
++ */
++import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
++import { CLINIC_CONTACT, SPECIALTIES, FAQ_ITEMS } from '../src/data/clinicData';
++
++const SITE_URL = (process.env.SITE_URL || '').replace(/\/+$/, '');
++const DIST = new URL('../dist/', import.meta.url);
++const template = readFileSync(new URL('index.html', DIST), 'utf-8');
++
++const esc = (s: string) =>
++  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
++const abs = (path: string) => (SITE_URL ? `${SITE_URL}${path}` : '');
++
++// Horaires -> format schema.org
++const DAY_MAP: Record<string, string[]> = {
++  'Lundi - Vendredi': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
++  Samedi: ['Saturday'],
++};
++const openingHours = CLINIC_CONTACT.hours
++  .filter((h) => DAY_MAP[h.day] && /\d/.test(h.time))
++  .map((h) => {
++    const [opens, closes] = h.time.split('-').map((t) => t.trim());
++    return { '@type': 'OpeningHoursSpecification', dayOfWeek: DAY_MAP[h.day], opens, closes };
++  });
++
++const clinicLd = {
++  '@context': 'https://schema.org',
++  '@type': ['Dentist', 'LocalBusiness'],
++  '@id': abs('/#cabinet') || undefined,
++  name: 'Cabinet Dentaire Dr. Rania Azzouzi',
++  description:
++    "Cabinet de chirurgie dentaire et d'esthétique du sourire à Tanger : implants, orthodontie, facettes, urgences.",
++  url: abs('/') || undefined,
++  telephone: CLINIC_CONTACT.phone,
++  email: CLINIC_CONTACT.email,
++  image: CLINIC_CONTACT.doctorImage,
++  address: {
++    '@type': 'PostalAddress',
++    streetAddress: CLINIC_CONTACT.address.split(',')[0].trim(),
++    addressLocality: 'Tanger',
++    addressCountry: 'MA',
++  },
++  openingHoursSpecification: openingHours,
++  medicalSpecialty: ['Dentistry', 'Orthodontics'],
++  founder: {
++    '@type': 'Physician',
++    name: CLINIC_CONTACT.name,
++    jobTitle: CLINIC_CONTACT.title,
++    medicalSpecialty: 'Dentistry',
++  },
++  availableLanguage: ['fr', 'ar', 'es'],
++};
++
++const faqLd = {
++  '@context': 'https://schema.org',
++  '@type': 'FAQPage',
++  mainEntity: FAQ_ITEMS.map((f) => ({
++    '@type': 'Question',
++    name: f.question,
++    acceptedAnswer: { '@type': 'Answer', text: f.answer },
++  })),
++};
++
++const ld = (o: unknown) =>
++  `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`;
++
++const contactBlock = `<p>${esc(CLINIC_CONTACT.name)} — ${esc(CLINIC_CONTACT.title)}<br>${esc(
++  CLINIC_CONTACT.address
++)}<br>Téléphone : ${esc(CLINIC_CONTACT.phone)}<br>${CLINIC_CONTACT.hours
++  .map((h) => `${esc(h.day)} : ${esc(h.time)}`)
++  .join(' — ')}</p>`;
++
++const servicesList = `<ul>${SPECIALTIES.map(
++  (s) => `<li><a href="/soins/${s.id}/"><strong>${esc(s.title)}</strong></a> : ${esc(s.shortDesc)}</li>`
++).join('')}</ul>`;
++
++function page(opts: { title: string; description: string; path: string; head?: string; body: string }) {
++  const canonical = abs(opts.path);
++  let html = template
++    .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(opts.title)}</title>`)
++    .replace(
++      /<meta name="description"[^>]*>/,
++      `<meta name="description" content="${esc(opts.description)}" />`
++    )
++    .replace(
++      /<meta property="og:title"[^>]*>/,
++      `<meta property="og:title" content="${esc(opts.title)}" />`
++    )
++    .replace(
++      /<meta property="og:description"[^>]*>/,
++      `<meta property="og:description" content="${esc(opts.description)}" />`
++    )
++    .replace(
++      '<!--SEO_HEAD-->',
++      [
++        canonical && `<link rel="canonical" href="${canonical}" />`,
++        canonical && `<meta property="og:url" content="${canonical}" />`,
++        `<meta property="og:image" content="${esc(CLINIC_CONTACT.heroImage)}" />`,
++        opts.head || '',
++      ]
++        .filter(Boolean)
++        .join('\n    ')
++    )
++    .replace('<!--SEO_ROOT-->', opts.body);
++  return html;
++}
++
++// ---------- Accueil ----------
++const home = page({
++  title: 'Dentiste à Tanger | Cabinet Dentaire Dr. Rania Azzouzi',
++  description:
++    'Cabinet dentaire à Tanger : implants, orthodontie, facettes et esthétique du sourire avec le Dr. Rania Azzouzi. Urgences dentaires, rendez-vous par WhatsApp.',
++  path: '/',
++  head: [ld(clinicLd), ld(faqLd)].join('\n    '),
++  body: `<main><h1>Cabinet dentaire à Tanger — Dr. Rania Azzouzi</h1>
++<p>${esc(CLINIC_CONTACT.title)}. Implants dentaires, orthodontie, facettes, blanchiment et soins conservateurs à Tanger.</p>
++<h2>Nos soins dentaires à Tanger</h2>${servicesList}
++<h2>Questions fréquentes</h2>${FAQ_ITEMS.map(
++    (f) => `<h3>${esc(f.question)}</h3><p>${esc(f.answer)}</p>`
++  ).join('')}
++<h2>Contact et horaires</h2>${contactBlock}</main>`,
++});
++writeFileSync(new URL('index.html', DIST), home);
++
++// ---------- Une page par soin ----------
++for (const s of SPECIALTIES) {
++  const path = `/soins/${s.id}/`;
++  const title = `${s.title} à Tanger | Dr. Rania Azzouzi`;
++  const description = `${s.shortDesc} Cabinet dentaire à Tanger, Dr. Rania Azzouzi.`.slice(0, 300);
++  const serviceLd = {
++    '@context': 'https://schema.org',
++    '@type': 'MedicalProcedure',
++    name: s.title,
++    description: s.fullDesc,
++    procedureType: 'https://schema.org/NoninvasiveProcedure',
++  };
++  const html = page({
++    title,
++    description,
++    path,
++    head: [ld(clinicLd), ld(serviceLd)].join('\n    '),
++    body: `<main><h1>${esc(s.title)} à Tanger</h1><p>${esc(s.fullDesc)}</p>
++<h2>Les avantages</h2><ul>${s.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
++<p>Durée estimée : ${esc(s.durationEstimate)}. Anesthésie : ${esc(s.anesthesiaType)}.</p>
++<p><a href="/">Retour à l'accueil</a></p>
++<h2>Contact et horaires</h2>${contactBlock}</main>`,
++  });
++  mkdirSync(new URL(`soins/${s.id}/`, DIST), { recursive: true });
++  writeFileSync(new URL(`soins/${s.id}/index.html`, DIST), html);
++}
++
++// ---------- sitemap.xml et robots.txt ----------
++if (SITE_URL) {
++  const urls = ['/', ...SPECIALTIES.map((s) => `/soins/${s.id}/`)];
++  const today = new Date().toISOString().slice(0, 10);
++  writeFileSync(
++    new URL('sitemap.xml', DIST),
++    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
++      .map((u) => `  <url><loc>${SITE_URL}${u}</loc><lastmod>${today}</lastmod></url>`)
++      .join('\n')}\n</urlset>\n`
++  );
++} else {
++  console.warn('[seo] SITE_URL absent : sitemap.xml et balises canonical non générés.');
++}
++writeFileSync(
++  new URL('robots.txt', DIST),
++  `User-agent: *\nAllow: /\n${SITE_URL ? `\nSitemap: ${SITE_URL}/sitemap.xml\n` : ''}`
++);
++console.log(`[seo] ${1 + SPECIALTIES.length} pages générées.`);
+diff --git a/src/App.tsx b/src/App.tsx
+index 5bffc17..2834468 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -3,7 +3,7 @@
+  * SPDX-License-Identifier: Apache-2.0
+  */
+ 
+-import React, { useState } from 'react';
++import React, { useEffect, useState } from 'react';
+ import { ClinicalCase, DentalSpecialty, Language } from './types';
+ import { Navbar } from './components/Navbar';
+ import { Hero } from './components/Hero';
+@@ -22,7 +22,7 @@ import { AppointmentModal } from './components/AppointmentModal';
+ import { CaseDetailModal } from './components/CaseDetailModal';
+ import { ServiceModal } from './components/ServiceModal';
+ 
+-import { CLINIC_CONTACT } from './data/clinicData';
++import { CLINIC_CONTACT, SPECIALTIES } from './data/clinicData';
+ 
+ export default function App() {
+   const [currentLang, setCurrentLang] = useState<Language>('FR');
+@@ -41,6 +41,15 @@ export default function App() {
+     }
+   });
+ 
++  // Pages /soins/<id>/ : la fenêtre du soin s'ouvre directement (pages indexables par Google)
++  useEffect(() => {
++    const match = window.location.pathname.match(/^\/soins\/([^/]+)\/?$/);
++    if (match) {
++      const found = SPECIALTIES.find((sp) => sp.id === match[1]);
++      if (found) setSelectedSpecialty(found);
++    }
++  }, []);
++
+   const handleUpdatePhoto = (newPhotoUrl: string) => {
+     setDoctorPhoto(newPhotoUrl);
+     try {
+@@ -163,6 +172,9 @@ export default function App() {
+         onClose={() => {
+           setSelectedSpecialty(null);
+           setAllServicesOpen(false);
++          if (window.location.pathname.startsWith('/soins/')) {
++            window.history.replaceState(null, '', '/');
++          }
+         }}
+         onBookSpecialty={(specialtyTitle) => {
+           setSelectedSpecialty(null);
+diff --git a/src/components/AppointmentModal.tsx b/src/components/AppointmentModal.tsx
+index d53ef96..50d4828 100644
+--- a/src/components/AppointmentModal.tsx
++++ b/src/components/AppointmentModal.tsx
+@@ -1,5 +1,6 @@
+ import React, { useState } from 'react';
+ import { SPECIALTIES } from '../data/clinicData';
++import { buildBookingWhatsAppUrl } from '../lib/booking';
+ 
+ interface AppointmentModalProps {
+   isOpen: boolean;
+@@ -22,7 +23,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
+   const [phone, setPhone] = useState<string>('');
+   const [email, setEmail] = useState<string>('');
+   const [notes, setNotes] = useState<string>('');
+-  const [confirmedRef, setConfirmedRef] = useState<string>('');
++  const [confirmedRef, setConfirmedRef] = useState<string>('');  // lien WhatsApp de la demande
+ 
+   if (!isOpen) return null;
+ 
+@@ -32,8 +33,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
+     e.preventDefault();
+     if (!name.trim() || !phone.trim()) return;
+ 
+-    const ref = `RDV-${Math.floor(100000 + Math.random() * 900000)}`;
+-    setConfirmedRef(ref);
++    setConfirmedRef(
++      buildBookingWhatsAppUrl({ name, phone, service, date, slot })
++    );
+     setStep(3);
+   };
+ 
+@@ -162,7 +164,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
+                   required
+                   value={name}
+                   onChange={(e) => setName(e.target.value)}
+-                  placeholder="Ex: Karim Benjelloun"
++                  placeholder="Ex : Prénom Nom"
+                   className="w-full bg-[#fbf9f9] border border-black/10 rounded-lg p-3 text-sm focus:border-black outline-none"
+                 />
+               </div>
+@@ -231,24 +233,26 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
+                 <span className="material-symbols-outlined text-3xl">check_circle</span>
+               </div>
+               <h4 className="font-cormorant text-2xl sm:text-3xl text-black">
+-                Rendez-vous Pré-réservé !
++                Dernière étape : envoyez votre demande
+               </h4>
+               <p className="text-xs sm:text-sm text-neutral-600 max-w-md mx-auto leading-relaxed">
+-                Merci {name}. Votre demande pour <span className="font-semibold text-black">{service}</span> a été transmise au cabinet du Dr. Rania Azzouzi.
++                Merci {name}. Votre demande pour <span className="font-semibold text-black">{service}</span> est prête. Elle n'est transmise au cabinet du Dr. Rania Azzouzi qu'après envoi sur WhatsApp.
+               </p>
+ 
+-              <div className="bg-[#f5f3f3] p-4 rounded-xl border border-black/10 inline-block font-mono-code text-xs">
+-                <span className="text-neutral-500 block text-[10px] uppercase tracking-wider">Numéro de confirmation</span>
+-                <span className="text-base font-bold text-black">{confirmedRef}</span>
++              <div>
++                <a
++                  href={confirmedRef}
++                  target="_blank"
++                  rel="noopener noreferrer"
++                  className="inline-block bg-black text-white font-sans text-xs font-semibold px-8 py-3 rounded-full hover:bg-neutral-800 transition-colors"
++                >
++                  Envoyer ma demande sur WhatsApp
++                </a>
+               </div>
+ 
+-              <p className="text-xs text-neutral-500">
+-                Vous recevrez un appel ou un SMS au <strong>{phone}</strong> pour confirmer votre horaire définitif.
+-              </p>
+-
+               <button
+                 onClick={handleClose}
+-                className="bg-black text-white font-sans text-xs font-semibold px-8 py-3 rounded-full hover:bg-neutral-800 transition-colors"
++                className="border border-black/20 text-black font-sans text-xs font-semibold px-8 py-3 rounded-full hover:bg-neutral-100 transition-colors"
+               >
+                 Fermer
+               </button>
+diff --git a/src/components/ContactSection.tsx b/src/components/ContactSection.tsx
+index ed1111e..f2e1785 100644
+--- a/src/components/ContactSection.tsx
++++ b/src/components/ContactSection.tsx
+@@ -1,6 +1,7 @@
+ import React, { useState } from 'react';
+ import { AppointmentFormData, Language } from '../types';
+ import { CLINIC_CONTACT, DICTIONARY, SPECIALTIES } from '../data/clinicData';
++import { buildBookingWhatsAppUrl } from '../lib/booking';
+ 
+ interface ContactSectionProps {
+   currentLang: Language;
+@@ -26,8 +27,17 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ currentLang }) =
+     e.preventDefault();
+     if (!formData.fullName.trim() || !formData.phone.trim()) return;
+ 
+-    const ref = `RDV-${Math.floor(100000 + Math.random() * 900000)}`;
+-    setBookingRef(ref);
++    setBookingRef(
++      buildBookingWhatsAppUrl({
++        name: formData.fullName,
++        phone: formData.phone,
++        email: formData.email,
++        service: formData.service,
++        date: formData.preferredDate,
++        slot: formData.preferredTime,
++        message: formData.message,
++      })
++    );
+     setSubmitted(true);
+   };
+ 
+@@ -66,19 +76,25 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ currentLang }) =
+                   <span className="material-symbols-outlined text-3xl">check_circle</span>
+                 </div>
+                 <h3 className="font-cormorant text-3xl text-black">
+-                  Demande de Rendez-vous Confirmée
++                  Dernière étape : envoyez votre demande
+                 </h3>
+                 <p className="font-sans text-sm text-[#4c4546] max-w-md mx-auto leading-relaxed">
+-                  Merci <span className="font-semibold text-black">{formData.fullName}</span>. Votre demande pour « {formData.service} » a bien été enregistrée.
++                  Merci <span className="font-semibold text-black">{formData.fullName}</span>. Votre demande pour « {formData.service} » est prête. Elle n'est transmise au cabinet qu'après envoi sur WhatsApp.
+                 </p>
+ 
+-                <div className="bg-white p-4 rounded-xl border border-black/10 inline-block font-mono-code text-xs text-neutral-800">
+-                  <span className="text-neutral-500 block text-[11px] uppercase tracking-wider">Référence dossier</span>
+-                  <span className="text-base font-bold text-black tracking-widest">{bookingRef}</span>
++                <div>
++                  <a
++                    href={bookingRef}
++                    target="_blank"
++                    rel="noopener noreferrer"
++                    className="inline-block bg-black text-white font-sans text-xs font-semibold px-8 py-3 rounded-full hover:bg-neutral-800 transition-colors"
++                  >
++                    Envoyer ma demande sur WhatsApp
++                  </a>
+                 </div>
+ 
+                 <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+-                  Notre coordinatrice de soins vous appellera au <span className="font-medium text-black">{formData.phone}</span> pour convenir de l'heure exacte.
++                  Vous préférez appeler ? <a href={`tel:${CLINIC_CONTACT.phone.replace(/\s+/g, '')}`} className="font-medium text-black underline underline-offset-4">{CLINIC_CONTACT.phone}</a>
+                 </p>
+ 
+                 <div className="pt-2">
+diff --git a/src/components/Hero.tsx b/src/components/Hero.tsx
+index b267f4e..69a0454 100644
+--- a/src/components/Hero.tsx
++++ b/src/components/Hero.tsx
+@@ -121,6 +121,9 @@ export const Hero: React.FC<HeroProps> = ({
+                   src={doctorPhoto}
+                   alt="Dr. Rania Azzouzi - Chirurgienne Dentiste à Tanger"
+                   referrerPolicy="no-referrer"
++                  fetchPriority="high"
++                  width={900}
++                  height={1200}
+                   className="w-full h-full object-cover object-center transition-all duration-700"
+                 />
+ 
+diff --git a/src/components/PatientPortalSection.tsx b/src/components/PatientPortalSection.tsx
+index d1e19f8..2c520ec 100644
+--- a/src/components/PatientPortalSection.tsx
++++ b/src/components/PatientPortalSection.tsx
+@@ -214,7 +214,7 @@ export const PatientPortalSection: React.FC<PatientPortalSectionProps> = ({
+                   <div className="lg:col-span-7 space-y-6">
+                     <div>
+                       <p className="font-mono-code text-xs uppercase tracking-widest text-neutral-500 mb-1">
+-                        Patient enregistré
++                        Exemple de démonstration (patient fictif)
+                       </p>
+                       <h3 className="font-cormorant text-2xl sm:text-3xl text-black font-semibold">
+                         {currentAppointment.patientName}
+diff --git a/src/data/portalData.ts b/src/data/portalData.ts
+index 66c7460..636af80 100644
+--- a/src/data/portalData.ts
++++ b/src/data/portalData.ts
+@@ -3,8 +3,8 @@ import { PatientAppointment, PostOpGuide } from '../types';
+ export const DEMO_APPOINTMENTS: PatientAppointment[] = [
+   {
+     id: "RDV-829104",
+-    patientName: "Sarah Mansouri",
+-    phone: "+212 661 45 88 12",
++    patientName: "Patient exemple A",
++    phone: "+212 600 00 00 01",
+     treatment: "Hollywood Smile — Pose Définitive des Facettes E-Max",
+     date: "15 Octobre 2026",
+     time: "10:30",
+@@ -21,8 +21,8 @@ export const DEMO_APPOINTMENTS: PatientAppointment[] = [
+   },
+   {
+     id: "RDV-492018",
+-    patientName: "Karim Benjelloun",
+-    phone: "+212 662 90 14 33",
++    patientName: "Patient exemple B",
++    phone: "+212 600 00 00 02",
+     treatment: "Contrôle Post-Opératoire & Pose Vis de Cicatrisation Implant",
+     date: "18 Octobre 2026",
+     time: "14:00",
+@@ -38,8 +38,8 @@ export const DEMO_APPOINTMENTS: PatientAppointment[] = [
+   },
+   {
+     id: "RDV-710342",
+-    patientName: "Yasmine Tazi",
+-    phone: "+212 663 12 77 09",
++    patientName: "Patient exemple C",
++    phone: "+212 600 00 00 03",
+     treatment: "Orthodontie Invisible — Livraison Nouveaux Aligneurs 3D",
+     date: "22 Octobre 2026",
+     time: "16:30",
+diff --git a/src/lib/booking.ts b/src/lib/booking.ts
+new file mode 100644
+index 0000000..ca6bd0c
+--- /dev/null
++++ b/src/lib/booking.ts
+@@ -0,0 +1,29 @@
++import { CLINIC_CONTACT } from '../data/clinicData';
++
++interface BookingRequest {
++  name: string;
++  phone: string;
++  email?: string;
++  service: string;
++  date?: string;
++  slot?: string;
++  message?: string;
++}
++
++/**
++ * Construit le lien WhatsApp qui contient la demande de rendez-vous.
++ * La demande arrive ainsi réellement au cabinet (aucun serveur nécessaire).
++ */
++export function buildBookingWhatsAppUrl(r: BookingRequest): string {
++  const lines = [
++    'Bonjour Dr. Azzouzi, je souhaite prendre rendez-vous.',
++    `Nom : ${r.name}`,
++    `Téléphone : ${r.phone}`,
++    r.email ? `E-mail : ${r.email}` : '',
++    `Soin : ${r.service}`,
++    r.date ? `Date souhaitée : ${r.date}` : '',
++    r.slot ? `Créneau : ${r.slot}` : '',
++    r.message ? `Message : ${r.message}` : '',
++  ].filter(Boolean);
++  return `https://wa.me/${CLINIC_CONTACT.whatsappNumber}?text=${encodeURIComponent(lines.join('\n'))}`;
++}
