@@ -1,0 +1,6 @@
+{
+  "name": "Cabinet Dentaire Dr. Rania Azzouzi",
+  "description": "Cabinet de chirurgie dentaire et d'esthétique du sourire d'excellence à Tanger, dirigé par le Dr. Rania Azzouzi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
